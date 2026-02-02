@@ -1,1 +1,35 @@
-# model.config.yaml
+framework: crewai
+
+agents:
+  campaign_planner:
+    name: "Campaign Planner"
+    role: "Campaign Manager & Content Creator"
+    goals: 
+      - "Plan marketing campaigns"
+      - "Generate text content"
+      - "Generate image prompts and images"
+    models:
+      planning: "groq/llama-3.3-70b-versatile"
+      writing: "groq/llama-3.1-8b-instant"
+      image_generation: "flux"
+
+  brand_validator:
+    name: "Brand Validator"
+    role: "Brand Compliance Officer"
+    model: "groq/llama-3.3-70b-versatile"
+
+  rag_agent:
+    name: "RAG Specialist"
+    role: "Context Retriever"
+    model: "groq/llama-3.1-8b-instant"
+    embeddings: "all-MiniLM-L6-v2"
+
+providers:
+  groq:
+    env_var: "GROQ_API_KEY"
+    base_url: "https://api.groq.com/openai/v1"
+  pollinations:
+    service: "pollinations.ai"
+  huggingface:
+    model: "all-MiniLM-L6-v2"
+
