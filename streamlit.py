@@ -77,10 +77,10 @@ elif page == "View Campaigns":
             if campaigns:
                 st.dataframe(campaigns)
                 
-                # Optional: Detailed view
-                st.subheader("Details")
+
+                st.subheader("Details") 
                 
-                # Create friendly display names: "Campaign Name (Brand)"
+              
                 campaign_options = {}
                 for c in campaigns:
                     display_name = f"{c['campaign_name']} ({c['brand']})"
