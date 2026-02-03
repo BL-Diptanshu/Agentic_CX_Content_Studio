@@ -1,11 +1,9 @@
 import uvicorn
 from fastapi import FastAPI
 from src.routes.api_routes import router as api_router
-# from src.core.database import Base, engine # Tables are already created manually
 
 app = FastAPI(title="Agentic CX Content Studio API")
 
-# Include API routes
 app.include_router(api_router, prefix="/api/v1")
 
 @app.get("/")
