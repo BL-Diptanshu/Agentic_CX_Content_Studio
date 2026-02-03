@@ -22,7 +22,7 @@ def health_check(db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database connection failed: {str(e)}")
 
-@router.post("/campaigns/")
+@router.post("/start_campaign")
 def create_campaign(campaign: CampaignCreate, db: Session = Depends(get_db)):
     new_campaign = Campaign(
         campaign_name=campaign.campaign_name,
