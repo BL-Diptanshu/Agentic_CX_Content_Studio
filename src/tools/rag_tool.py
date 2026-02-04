@@ -14,7 +14,7 @@ class BrandKnowledgeTool(BaseTool):
         "Input should be a specific query about the brand (e.g., 'What is the brand tone?', 'Forbidden words')."
     )
     
-    # Private attributes (not involved in validation)
+    
     _model: SentenceTransformer = PrivateAttr()
     _index: faiss.Index = PrivateAttr()
     _docs: list = PrivateAttr()
