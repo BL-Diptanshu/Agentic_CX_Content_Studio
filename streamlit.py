@@ -103,3 +103,5 @@ elif page == "View Campaigns":
         st.error("Failed to connect to backend API. Is the server running?")
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")
+
+

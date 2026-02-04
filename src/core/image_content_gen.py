@@ -9,6 +9,9 @@ class ImageGenerator:
     Generates images using the Replicate API with the FLUX.1 models.
     """
     def __init__(self, model="black-forest-labs/flux-dev"):
+        # Load environment variables fresh each time
+        load_dotenv(override=True)
+        
         self.model = model
         self.api_token = os.getenv("REPLICATE_API_TOKEN")
         
