@@ -1,6 +1,9 @@
 import os
 import replicate
+import logging
 from dotenv import load_dotenv
+
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -9,7 +12,6 @@ class ImageGenerator:
     Generates images using the Replicate API with the FLUX.1 models.
     """
     def __init__(self, model="black-forest-labs/flux-dev"):
-        # Load environment variables fresh each time
         load_dotenv(override=True)
         
         self.model = model
@@ -49,13 +51,13 @@ class ImageGenerator:
                 input=input_params
             )
             if isinstance(output, list) and len(output) > 0:
-                print(f"DEBUG: Replicate Output: {output}")
+                logger.info(f"Image generated successfully: {output[0]}")
                 return str(output[0])
             else:
                 raise ValueError("Replicate returned empty output.")
                 
         except Exception as e:
-            print(f"Error generating image with Replicate: {e}")
+            logger.error(f"Error generating image with Replicate: {e}")
             raise
 
 if __name__ == "__main__":

@@ -108,6 +108,7 @@ def generate_text(request: TextGenerateRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Text generation failed: {str(e)}")
 
+
 class MarketingCopyRequest(BaseModel):
     campaign_name: str
     brand: str
@@ -138,3 +139,40 @@ def generate_marketing_copy(request: MarketingCopyRequest):
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Marketing copy generation failed: {str(e)}")
+
+class ImageGenerateRequest(BaseModel):
+    prompt: str
+    width: Optional[int] = 1024
+    height: Optional[int] = 1024
+    seed: Optional[int] = None
+
+class ImageGenerateResponse(BaseModel):
+    image_url: str
+    model: str
+    timestamp: str
+    prompt: str
+
+@router.post("/generate/image", response_model=ImageGenerateResponse)
+def generate_image(request: ImageGenerateRequest):
+    """
+    Generate image using Replicate API with FLUX.1-dev.
+    """
+    try:
+        from src.core.image_content_gen import ImageGenerator
+        
+        generator = ImageGenerator()
+        image_url = generator.generate(
+            prompt=request.prompt,
+            width=request.width,
+            height=request.height,
+            seed=request.seed
+        )
+        
+        return ImageGenerateResponse(
+            image_url=image_url,
+            model=generator.model,
+            timestamp=datetime.now().isoformat(),
+            prompt=request.prompt
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Image generation failed: {str(e)}")
