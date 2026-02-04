@@ -4,6 +4,7 @@ from sqlalchemy import text
 from src.core.database import get_db
 from src.core.models import Campaign, TextContent
 from src.core.text_content_gen import get_text_generator
+from src.core.brand_validator import get_brand_validator, ValidationResult
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
 from datetime import datetime
@@ -176,3 +177,111 @@ def generate_image(request: ImageGenerateRequest):
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Image generation failed: {str(e)}")
+
+# Brand Validation Endpoints
+
+class ValidateTextRequest(BaseModel):
+    text: str
+    strict: Optional[bool] = False
+
+class ValidateTextResponse(BaseModel):
+    is_valid: bool
+    violations: list
+    warnings: list
+    detected_tone: str
+    missing_keywords: list
+    forbidden_words_found: list
+
+@router.post("/validate/text", response_model=ValidateTextResponse)
+def validate_text(request: ValidateTextRequest):
+    """
+    Validate text content against brand guidelines.
+    
+    Checks for:
+    - Forbidden words
+    - Required keywords
+    - Tone consistency
+    """
+    try:
+        validator = get_brand_validator(
+            forbidden_words=["cheap", "scam", "fraud", "terrible", "worst", "hate"],
+            required_keywords=["innovation", "quality", "premium"] if request.strict else []
+        )
+        
+        result = validator.validate(request.text)
+        
+        return ValidateTextResponse(**result.to_dict())
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Validation failed: {str(e)}")
+
+class TextGenerateWithValidationResponse(BaseModel):
+    generated_text: str
+    model: str
+    timestamp: str
+    prompt: str
+    validation: Optional[ValidateTextResponse] = None
+
+@router.post("/generate/text-validated", response_model=TextGenerateWithValidationResponse)
+def generate_text_with_validation(request: TextGenerateRequest):
+    """
+    Generate text and automatically validate against brand guidelines.
+    """
+    try:
+        # Generate text
+        generator = get_text_generator()
+        generated = generator.generate_text(
+            prompt=request.prompt,
+            max_tokens=request.max_tokens,
+            temperature=request.temperature
+        )
+        
+        # Validate generated text
+        validator = get_brand_validator(
+            forbidden_words=["cheap", "scam", "fraud", "terrible", "worst", "hate"],
+            required_keywords=[]
+        )
+        validation_result = validator.validate(generated)
+        
+        return TextGenerateWithValidationResponse(
+            generated_text=generated,
+            model=generator.model_name,
+            timestamp=datetime.now().isoformat(),
+            prompt=request.prompt,
+            validation=ValidateTextResponse(**validation_result.to_dict())
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Text generation with validation failed: {str(e)}")
+
+@router.post("/generate/marketing-copy-validated", response_model=TextGenerateWithValidationResponse)
+def generate_marketing_copy_with_validation(request: MarketingCopyRequest):
+    """
+    Generate marketing copy and automatically validate against brand guidelines.
+    """
+    try:
+        # Generate marketing copy
+        generator = get_text_generator()
+        generated = generator.generate_marketing_copy(
+            campaign_name=request.campaign_name,
+            brand=request.brand,
+            objective=request.objective,
+            target_audience=request.target_audience,
+            max_tokens=request.max_tokens
+        )
+        
+        # Validate generated copy
+        validator = get_brand_validator(
+            forbidden_words=["cheap", "scam", "fraud", "terrible", "worst", "hate"],
+            required_keywords=["innovation", "quality"]
+        )
+        validation_result = validator.validate(generated)
+        
+        return TextGenerateWithValidationResponse(
+            generated_text=generated,
+            model=generator.model_name,
+            timestamp=datetime.now().isoformat(),
+            prompt=f"{request.campaign_name} - {request.brand}",
+            validation=ValidateTextResponse(**validation_result.to_dict())
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Marketing copy generation with validation failed: {str(e)}")
