@@ -45,5 +45,6 @@ data/vectordb/*
 data/postgresdb/*
 !data/cache/.gitkeep
 !data/embeddings/.gitkeep
+!data/embeddings/brand_guidelines.txt
 !data/vectordb/.gitkeep
 !data/postgresdb/.gitkeep

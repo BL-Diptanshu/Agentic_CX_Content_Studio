@@ -10,8 +10,8 @@ import pickle
 # Paths
 DATA_DIR = "data"
 GUIDELINES_FILE = os.path.join(DATA_DIR, "embeddings", "brand_guidelines.txt")
-INDEX_FILE = os.path.join(DATA_DIR, "brand_index.bin")
-DOCS_FILE = os.path.join(DATA_DIR, "brand_docs.pkl")
+INDEX_FILE = os.path.join(DATA_DIR, "vectordb", "faiss", "brand_index.bin")
+DOCS_FILE = os.path.join(DATA_DIR, "vectordb", "faiss", "brand_docs.pkl")
 
 def setup_rag():
     print("Starting RAG Setup...")

@@ -26,8 +26,8 @@ class BrandGuidelineRetriever(BaseTool):
         self._load_resources(data_dir)
 
     def _load_resources(self, data_dir):
-        index_file = os.path.join(data_dir, "brand_index.bin")
-        docs_file = os.path.join(data_dir, "brand_docs.pkl")
+        index_file = os.path.join(data_dir, "vectordb", "faiss", "brand_index.bin")
+        docs_file = os.path.join(data_dir, "vectordb", "faiss", "brand_docs.pkl")
         
         if not os.path.exists(index_file) or not os.path.exists(docs_file):
             raise FileNotFoundError(
