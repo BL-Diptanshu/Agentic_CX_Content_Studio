@@ -48,3 +48,4 @@ data/postgresdb/*
 !data/embeddings/brand_guidelines.txt
 !data/vectordb/.gitkeep
 !data/postgresdb/.gitkeep
+mlflow.db
