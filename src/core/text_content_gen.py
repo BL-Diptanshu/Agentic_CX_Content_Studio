@@ -8,6 +8,7 @@ import logging
 from typing import Optional
 from datetime import datetime
 from dotenv import load_dotenv
+from src.prompt.text_generation_prompts import build_marketing_copy_prompt
 import mlflow
 import time
 
@@ -127,15 +128,13 @@ class TextGenerator:
             Generated marketing copy
         """
         
-        prompt = f"""Write compelling marketing copy for {brand}'s '{campaign_name}' campaign.
-
-Campaign Objective: {objective}
-"""
-        
-        if target_audience:
-            prompt += f"Target Audience: {target_audience}\n"
-        
-        prompt += "\nGenerate engaging marketing copy that captures attention and drives action:"
+        # Build prompt using centralized template
+        prompt = build_marketing_copy_prompt(
+            campaign_name=campaign_name,
+            brand=brand,
+            objective=objective,
+            target_audience=target_audience
+        )
         
         return self.generate_text(prompt, max_tokens=max_tokens)
 
