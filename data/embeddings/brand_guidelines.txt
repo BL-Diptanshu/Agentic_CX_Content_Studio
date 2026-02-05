@@ -1,195 +1,178 @@
-# CyberNova Brand Guidelines
+﻿FitNow: Official Brand Guidelines Document
+________________
 
-## Brand Overview
-CyberNova is a cutting-edge technology company specializing in AI-powered consumer electronics and smart devices. Our mission is to make advanced technology accessible, intuitive, and delightful for everyone.
 
-## Brand Voice & Tone
+1. Brand Overview
+FitNow is a customer-first digital health and fitness platform designed to support individuals in building sustainable, long-term wellness habits.
+The brand focuses on progress over perfection, encouraging users to improve their health at a pace that suits their lifestyle.
+FitNow does not promote extreme fitness outcomes, instant transformations, or unrealistic promises. Instead, it positions itself as a trusted companion in the customer’s wellness journey.
+________________
 
-### Voice Attributes
-- **Innovative**: We speak about the future with confidence and excitement
-- **Approachable**: Complex technology explained in simple, friendly terms
-- **Empowering**: We help users unlock their potential
-- **Authentic**: Honest about capabilities and limitations
 
-### Tone Guidelines
-- **Marketing Materials**: Enthusiastic, inspiring, future-focused
-- **Product Descriptions**: Clear, benefit-driven, educational
-- **Social Media**: Conversational, witty, engaging
-- **Customer Support**: Patient, helpful, solution-oriented
+2. Brand Mission & Vision
+Mission
+To empower individuals to build healthier habits through guidance, consistency, and positive reinforcement.
+Vision
+To create a supportive fitness ecosystem where people of all fitness levels feel confident, motivated, and respected.
+________________
 
-## Visual Identity
 
-### Color Palette
-**Primary Colors**:
-- Electric Blue (#0066FF) - Innovation and trust
-- Neon Purple (#9D4EDD) - Creativity and premium quality
-- Deep Space (#0A0E27) - Sophistication and depth
+3. Brand Values
+The following values must be reflected in all customer-facing communication:
+* Trust & Transparency
 
-**Secondary Colors**:
-- Cyber Cyan (#00F5FF) - Energy and connectivity
-- Silver (#C0C0C0) - Precision and technology
-- White (#FFFFFF) - Clarity and simplicity
+ Communication must be honest, clear, and free of misleading claims.
 
-### Typography
-- **Headlines**: Outfit Bold (Modern, geometric)
-- **Body Text**: Inter Regular (Clear, readable)
-- **Accent**: Space Mono (Tech-forward, distinctive)
+* Encouragement over Pressure
 
-## Target Audience
+ Messaging should motivate users without inducing guilt, fear, or urgency.
 
-### Primary Segments
+* Inclusivity
 
-**Tech Enthusiasts (25-40)**
-- Early adopters of new technology
-- Value innovation and performance
-- Active on tech forums and social media
-- Price-conscious but willing to pay for quality
+ Content must acknowledge diverse body types, abilities, and fitness levels.
 
-**Creative Professionals (28-45)**
-- Content creators, designers, photographers
-- Need powerful, reliable tools
-- Appreciate aesthetic design
-- Value seamless workflow integration
+* Consistency over Intensity
 
-**Young Professionals (22-35)**
-- Career-focused individuals
-- Seek productivity and efficiency
-- Style-conscious consumers
-- Mobile-first users
+ Promote sustainable effort rather than extreme or short-term results.
 
-## Messaging Framework
+________________
 
-### Brand Promise
-"Empowering your digital life with intelligent technology that just works."
 
-### Key Messages
+4. Tone & Voice Guidelines
+Required Tone
+All content generated for FitNow must be:
+   * Empathetic
 
-**Innovation**
-- We pioneer breakthrough features that anticipate user needs
-- Our products combine cutting-edge AI with intuitive design
-- Every release pushes the boundaries of what's possible
+   * Supportive
 
-**Accessibility**
-- Advanced technology shouldn't require advanced knowledge
-- We design for humans first, technology second
-- Premium features at competitive prices
+   * Friendly
 
-**Quality**
-- Built to last with premium materials
-- Rigorous testing ensures reliability
-- Industry-leading warranty and support
+   * Motivational (without pressure)
 
-## Product Lines
+Prohibited Tone
+The following tones are strictly disallowed:
+      * Aggressive or commanding
 
-### Nova X Series (Smartphones)
-- Premium flagship devices
-- Focus: AI photography, performance, battery life
-- Messaging: "Intelligence in your pocket"
+      * Judgmental or shaming
 
-### Nova Vision (AR/VR Headsets)
-- Mixed reality experiences
-- Focus: Immersive content, productivity applications
-- Messaging: "Step into the future"
+      * Fear-based or manipulative
 
-### Nova Home (Smart Home Ecosystem)
-- Connected home devices
-- Focus: Automation, energy efficiency, security
-- Messaging: "Your intelligent home companion"
+      * Overly sales-driven
 
-## Content Guidelines
+Voice Characteristics
+         * Simple, conversational language
 
-### Writing Style
-- Use active voice over passive
-- Keep sentences concise (max 20 words)
-- Avoid technical jargon unless necessary
-- Lead with benefits, not features
-- Use storytelling to create emotional connections
+         * Short to medium-length sentences
 
-### Prohibited Language
-- Avoid superlatives without evidence (best, perfect, revolutionary)
-- No fear-based messaging
-- Don't disparage competitors
-- Avoid gender-biased language
+         * Positive framing
 
-### Social Media Best Practices
-- **Instagram**: High-quality product photography, lifestyle shots, user content
-- **Twitter/X**: Tech news, product updates, customer engagement
-- **LinkedIn**: Industry insights, company culture, innovation stories
-- **TikTok**: Behind-the-scenes, product demos, trending challenges
+         * Clear call-to-action without urgency pressure
 
-## Campaign Examples
+________________
 
-### Product Launch Template
-**Pre-Launch**:
-- Teaser content highlighting mystery features
-- Influencer unboxing partnerships
-- Countdown campaigns on social media
 
-**Launch Day**:
-- Hero announcement video
-- Press releases to tech media
-- Live demo events
-- Limited-time early-bird pricing
+5. Language & Messaging Rules
+Allowed Language Patterns
+            * “Support your fitness journey”
 
-**Post-Launch**:
-- User testimonials and reviews
-- Tutorial content and tips
-- Community engagement and contests
+            * “Build habits that last”
 
-### Seasonal Campaigns
-**Summer Tech Festival**:
-- Theme: "Power your summer adventures"
-- Focus: Portability, battery life, durability
-- Channels: Social media, email, retail displays
+            * “Progress at your own pace”
 
-**Back to School**:
-- Theme: "Gear up for success"
-- Focus: Productivity, affordability, student discounts
-- Channels: Campus partnerships, student influencers
+            * “Designed to help you stay consistent”
 
-## Brand Do's and Don'ts
+Forbidden Language Patterns
+The following must never appear in any generated content:
+               * Absolute claims (e.g., “guaranteed results”, “100% success”)
 
-### Do's
-✓ Highlight real user benefits
-✓ Use authentic customer stories
-✓ Show diverse representation in imagery
-✓ Maintain consistent visual identity
-✓ Respond promptly to customer feedback
-✓ Celebrate community achievements
+               * Instant outcome claims (e.g., “lose weight fast”, “instant transformation”)
 
-### Don'ts
-✗ Make promises we can't keep
-✗ Use stock photos when custom is possible
-✗ Rely solely on technical specifications
-✗ Ignore negative feedback
-✗ Copy competitor messaging
-✗ Sacrifice clarity for creativity
+               * Fear-based urgency (e.g., “last chance”, “act now or regret”)
 
-## Legal & Compliance
+________________
 
-### Trademark Usage
-- Always use ® symbol with CyberNova brand name
-- Product names use ™ until registered
-- Never modify logo or brand colors
 
-### Claims Requirements
-- Performance claims must be verified
-- Include necessary disclaimers (battery life, AI features)
-- Regional variations for regulatory compliance
+6. Customer Promise
+FitNow commits to:
+                  * Supporting healthy habit formation
 
-### Privacy Messaging
-- Be transparent about data collection
-- Highlight user control over privacy settings
-- Comply with GDPR, CCPA, and local regulations
+                  * Encouraging consistency and self-improvement
 
-## Contact Information
-For brand guideline questions or approval requests, contact:
-- Brand Team: brand@cybernova.tech
-- Marketing Director: sarah.chen@cybernova.tech
-- Legal Review: legal@cybernova.tech
+                  * Providing tools, not guarantees
 
----
+FitNow does not promise:
+                     * Specific weight loss results
 
-**Document Version**: 3.2  
-**Last Updated**: February 2026  
-**Next Review**: May 2026
+                     * Medical or clinical outcomes
+
+                     * Time-bound transformations
+
+________________
+
+
+7. Compliance & Regulatory Guidelines
+                        * Avoid medical, clinical, or diagnostic claims
+
+                        * Do not reference doctors, medical approval, or clinical proof
+
+                        * Benefits must be framed as supportive tools, not outcomes
+
+                        * Avoid language that could be interpreted as medical advice
+
+________________
+
+
+8. Visual Identity Guidelines (For Image Generation)
+Allowed Visual Themes
+                           * Realistic, everyday fitness activities
+
+                           * Diverse body types and age groups
+
+                           * Neutral or natural environments
+
+                           * Positive, approachable expressions
+
+Disallowed Visual Themes
+                              * Before/after transformation imagery
+
+                              * Extreme body ideals
+
+                              * Sexualized or unrealistic depictions
+
+                              * Shock-value visuals
+
+________________
+
+
+9. Content Applicability
+This document applies to all:
+                                 * Marketing emails
+
+                                 * Push notifications
+
+                                 * In-app banners
+
+                                 * Social media creatives
+
+                                 * AI-generated images
+
+                                 * AI-generated written content
+
+No content may be generated unless this document is approved and validated.
+________________
+
+
+10. Usage in AI Systems
+This document is intended to be:
+                                    * Validated by a Brand Validator Agent
+
+                                    * Indexed into a Vector Database for RAG
+
+                                    * Used as pre-generation grounding context
+
+                                    * Referenced during brand safety checks
+
+Only approved sections of this document may be passed to:
+                                       * Text Generation Agents
+
+                                       * Image Generation Agents
