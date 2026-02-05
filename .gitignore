@@ -38,6 +38,8 @@ ENV/
 # Project specific
 project_details.txt
 system_architecture_and_design.png
+logs/
+*.log
 
 data/cache/*
 data/embeddings/*
