@@ -6,14 +6,16 @@ import pickle
 import os
 from sentence_transformers import SentenceTransformer
 from typing import Type
+from src.prompt.rag_prompt_temp import (
+    BRAND_RETRIEVER_DESCRIPTION,
+    format_retrieval_results,
+    NO_RESULTS_MESSAGE,
+    RETRIEVAL_ERROR_TEMPLATE
+)
 
 class BrandGuidelineRetriever(BaseTool):
     name: str = "Brand Guideline Retriever"
-    description: str = (
-        "Retrieves specific brand guideline information including voice, tone, "
-        "target audience, visual identity, and messaging framework. "
-        "Input should be a focused question about brand guidelines."
-    )
+    description: str = BRAND_RETRIEVER_DESCRIPTION
     
     _model: SentenceTransformer = PrivateAttr()
     _index: faiss.Index = PrivateAttr()
@@ -62,19 +64,11 @@ class BrandGuidelineRetriever(BaseTool):
                     }
                     results.append(result_entry)
             
-            if not results:
-                return "No relevant brand guideline information found."
-            
-            output = "Brand Guideline Information:\n\n"
-            for res in results:
-                output += f"[Result {res['rank']} - Relevance: {res['relevance']:.2%}]\n"
-                output += f"{res['text']}\n\n"
-                output += "-" * 60 + "\n\n"
-            
-            return output.strip()
+            # Use template formatting
+            return format_retrieval_results(results)
             
         except Exception as e:
-            return f"Error retrieving brand guidelines: {str(e)}"
+            return RETRIEVAL_ERROR_TEMPLATE.format(error=str(e))
 
 if __name__ == "__main__":
     try:

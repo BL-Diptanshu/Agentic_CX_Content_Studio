@@ -1,0 +1,12 @@
+{
+  "allowed_sections": [
+    "brand values",
+    "mission statement",
+    "product description",
+    "customer promise"
+  ],
+  "restricted_sections": [
+    "legal claims",
+    "performance guarantees"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "required_tone": [
+    "empathetic",
+    "supportive",
+    "inclusive"
+  ],
+  "disallowed_tone": [
+    "fear-driven",
+    "aggressive",
+    "judgmental"
+  ],
+  "writing_style": [
+    "simple sentences",
+    "positive framing",
+    "customer-first language"
+  ]
+}

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import text
+import logging
 from src.core.database import get_db
 from src.core.models import Campaign, TextContent
 from src.core.text_content_gen import get_text_generator
@@ -9,6 +10,7 @@ from pydantic import BaseModel
 from typing import Optional, Dict, Any
 from datetime import datetime
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 class CampaignCreate(BaseModel):
@@ -21,22 +23,30 @@ class CampaignCreate(BaseModel):
 def health_check(db: Session = Depends(get_db)):
     try:
         db.execute(text("SELECT 1"))
+        logger.debug("Health check passed")
         return {"status": "healthy", "database": "connected"}
     except Exception as e:
+        logger.error(f"Health check failed: {e}")
         raise HTTPException(status_code=500, detail=f"Database connection failed: {str(e)}")
 
 @router.post("/start_campaign")
-def create_campaign(campaign: CampaignCreate, db: Session = Depends(get_db)):
-    new_campaign = Campaign(
-        campaign_name=campaign.campaign_name,
-        brand=campaign.brand,
-        objective=campaign.objective,
-        inputs=campaign.inputs
-    )
-    db.add(new_campaign)
-    db.commit()
-    db.refresh(new_campaign)
-    return {"status": "created", "campaign_id": new_campaign.campaign_id, "data": new_campaign}
+def create_campaign(campaign: CampaignCreate, db: Session  = Depends(get_db)):
+    logger.info(f"Creating campaign: {campaign.campaign_name} for brand: {campaign.brand}")
+    try:
+        new_campaign = Campaign(
+            campaign_name=campaign.campaign_name,
+            brand=campaign.brand,
+            objective=campaign.objective,
+            inputs=campaign.inputs
+        )
+        db.add(new_campaign)
+        db.commit()
+        db.refresh(new_campaign)
+        logger.info(f"Campaign created successfully: ID={new_campaign.campaign_id}")
+        return {"status": "created", "campaign_id": new_campaign.campaign_id, "data": new_campaign}
+    except Exception as e:
+        logger.error(f"Failed to create campaign: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/campaigns/")
 def list_campaigns(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):

@@ -8,7 +8,7 @@ import logging
 from typing import Optional
 from datetime import datetime
 from dotenv import load_dotenv
-from src.prompt.text_generation_prompts import build_marketing_copy_prompt
+from src.prompt.writer_temp import build_marketing_copy_prompt
 import mlflow
 import time
 

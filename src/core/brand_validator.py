@@ -1,6 +1,6 @@
 """
-Brand Validator Module
-Provides rule-based brand validation for content (forbidden words, required keywords, tone checking).
+Brand Validator Module - KB Integrated
+Provides rule-based brand validation using brand_kb/ knowledge base
 """
 import re
 import logging
@@ -43,62 +43,40 @@ class ValidationResult:
 
 class BrandValidator:
     """
-    Rule-based brand validator that checks text against brand guidelines.
-    
-    Validates:
-    - Forbidden words/phrases (banned terms)
-    - Required keywords (brand terms that should be present)
-    - Tone (formal vs casual language patterns)
+    Rule-based brand validator using brand_kb/ knowledge base.
+    Loads rules dynamically from JSON files.
     """
     
-    def __init__(
-        self,
-        forbidden_words: Optional[List[str]] = None,
-        required_keywords: Optional[List[str]] = None,
-        formal_indicators: Optional[List[str]] = None,
-        casual_indicators: Optional[List[str]] = None
-    ):
-        """
-        Initialize brand validator with rule sets.
+    def __init__(self, kb_path: str = "brand_kb"):
+        """Initialize validator with KB rules"""
+        from src.core.brand_kb_loader import get_kb_loader
         
-        Args:
-            forbidden_words: List of banned terms/phrases
-            required_keywords: List of required brand keywords
-            formal_indicators: Words/patterns indicating formal tone
-            casual_indicators: Words/patterns indicating casual tone
-        """
-        # Default forbidden words (common inappropriate terms)
-        self.forbidden_words: Set[str] = set(forbidden_words or [
-            "cheap", "scam", "fraud", "terrible", "worst", "hate"
-        ])
+        self.kb_loader = get_kb_loader(kb_path)
         
-        # Default required keywords (should be customized per brand)
-        self.required_keywords: Set[str] = set(required_keywords or [])
+        # Load all KB rules
+        self.forbidden_lang = self.kb_loader.load_forbidden_language()
+        self.all_forbidden_terms = self.kb_loader.get_all_forbidden_terms()
+        self.allowed_lang = self.kb_loader.load_allowed_language()
+        self.all_allowed_phrases = self.kb_loader.get_all_allowed_phrases()
+        self.tone_profile = self.kb_loader.load_tone_profile()
         
-        # Tone indicators
-        self.formal_indicators: Set[str] = set(formal_indicators or [
-            "furthermore", "therefore", "moreover", "consequently", 
-            "nevertheless", "accordingly", "henceforth"
-        ])
+        # Tone detection patterns
+        self.tone_patterns = {
+            "fear-driven": ["afraid", "scared", "terrified", "panic", "disaster"],
+            "aggressive": ["must", "have to", "obligated", "force", "demand"],
+            "judgmental": ["should have", "failure", "wrong choice", "mistake"],
+            "empathetic": ["understand", "support", "care", "help", "together"],
+            "supportive": ["encourage", "assist", "guide", "empower"],
+            "inclusive": ["everyone", "all", "inclusive", "accessible", "welcome"]
+        }
         
-        self.casual_indicators: Set[str] = set(casual_indicators or [
-            "hey", "cool", "awesome", "yeah", "gonna", "wanna", 
-            "kinda", "pretty much", "you guys"
-        ])
-        
-        logger.info("BrandValidator initialized with %d forbidden words, %d required keywords",
-                   len(self.forbidden_words), len(self.required_keywords))
+        logger.info(
+            f"BrandValidator initialized: {len(self.all_forbidden_terms)} forbidden terms, "
+            f"{len(self.all_allowed_phrases)} allowed phrases"
+        )
     
     def validate(self, text: str) -> ValidationResult:
-        """
-        Validate text against all brand rules.
-        
-        Args:
-            text: Content text to validate
-            
-        Returns:
-            ValidationResult with validation status and details
-        """
+        """Validate text against brand KB rules"""
         if not text or not text.strip():
             return ValidationResult(
                 is_valid=False,
@@ -112,114 +90,90 @@ class BrandValidator:
         text_lower = text.lower()
         violations = []
         warnings = []
+        forbidden_found = []
         
-        # Check forbidden words
-        forbidden_found = self.check_forbidden_words(text_lower)
-        if forbidden_found:
-            violations.append(f"Contains forbidden words: {', '.join(forbidden_found)}")
+        # Check forbidden language by category
+        for category, terms in self.forbidden_lang.items():
+            found = self._check_forbidden_category(text_lower, terms)
+            if found:
+                forbidden_found.extend(found)
+                violations.append(
+                    f"Contains {category.replace('_', ' ')}: {', '.join(found)}"
+                )
         
-        # Check required keywords
-        missing_kw = self.check_required_keywords(text_lower)
-        if missing_kw:
-            warnings.append(f"Missing required keywords: {', '.join(missing_kw)}")
+        # Check tone violations
+        tone_violations = self._check_disallowed_tones(text_lower)
+        violations.extend(tone_violations)
         
-        # Check tone
-        detected_tone = self.check_tone(text_lower)
+        # Check for encouraged language
+        encouraged = self._check_allowed_language(text_lower)
+        if encouraged:
+            warnings.append(f"✓ Good use of: {', '.join(encouraged)}")
         
-        # Determine if valid (no violations)
-        is_valid = len(violations) == 0
+        # Detect tone
+        detected_tone = self._detect_dominant_tone(text_lower)
         
         return ValidationResult(
-            is_valid=is_valid,
+            is_valid=len(violations) == 0,
             violations=violations,
             warnings=warnings,
             detected_tone=detected_tone,
-            missing_keywords=missing_kw,
+            missing_keywords=[],
             forbidden_words_found=forbidden_found
         )
     
-    def check_forbidden_words(self, text: str) -> List[str]:
-        """
-        Check for forbidden words in text.
+    def _check_forbidden_category(self, text: str, terms: List[str]) -> List[str]:
+        """Check for forbidden terms"""
+        return [term for term in terms if term.lower() in text]
+    
+    def _check_disallowed_tones(self, text: str) -> List[str]:
+        """Check for disallowed tone indicators"""
+        disallowed = self.tone_profile.get("disallowed_tone", [])
+        violations = []
         
-        Args:
-            text: Lowercase text to check
-            
-        Returns:
-            List of forbidden words found
-        """
+        for tone in disallowed:
+            if tone in self.tone_patterns:
+                found = [w for w in self.tone_patterns[tone] if w in text]
+                if found:
+                    violations.append(
+                        f"Disallowed tone ({tone}): {', '.join(found[:2])}"
+                    )
+        
+        return violations
+    
+    def _check_allowed_language(self, text: str) -> List[str]:
+        """Find encouraged phrases"""
         found = []
-        for word in self.forbidden_words:
-            # Use word boundaries to match whole words
-            pattern = r'\b' + re.escape(word) + r'\b'
-            if re.search(pattern, text, re.IGNORECASE):
-                found.append(word)
+        for phrases in self.allowed_lang.values():
+            for phrase in phrases:
+                if phrase.lower() in text:
+                    found.append(phrase)
         return found
     
-    def check_required_keywords(self, text: str) -> List[str]:
-        """
-        Check for required keywords in text.
-        
-        Args:
-            text: Lowercase text to check
-            
-        Returns:
-            List of missing required keywords
-        """
-        missing = []
-        for keyword in self.required_keywords:
-            pattern = r'\b' + re.escape(keyword) + r'\b'
-            if not re.search(pattern, text, re.IGNORECASE):
-                missing.append(keyword)
-        return missing
-    
-    def check_tone(self, text: str) -> ToneType:
-        """
-        Detect tone of text based on indicator words.
-        
-        Args:
-            text: Lowercase text to analyze
-            
-        Returns:
-            Detected ToneType
-        """
-        formal_count = sum(1 for word in self.formal_indicators if word in text)
-        casual_count = sum(1 for word in self.casual_indicators if word in text)
-        
-        if formal_count == 0 and casual_count == 0:
-            return ToneType.NEUTRAL
-        elif formal_count > casual_count:
-            return ToneType.FORMAL
-        elif casual_count > formal_count:
-            return ToneType.CASUAL
-        else:
-            return ToneType.NEUTRAL
-
-
-# Singleton instance
-_validator_instance: Optional[BrandValidator] = None
-
-
-def get_brand_validator(
-    forbidden_words: Optional[List[str]] = None,
-    required_keywords: Optional[List[str]] = None
-) -> BrandValidator:
-    """
-    Get or create singleton BrandValidator instance.
-    
-    Args:
-        forbidden_words: Optional custom forbidden words list
-        required_keywords: Optional custom required keywords list
-        
-    Returns:
-        BrandValidator instance
-    """
-    global _validator_instance
-    
-    if _validator_instance is None:
-        _validator_instance = BrandValidator(
-            forbidden_words=forbidden_words,
-            required_keywords=required_keywords
+    def _detect_dominant_tone(self, text: str) -> ToneType:
+        """Detect overall tone"""
+        positive = sum(
+            sum(1 for w in self.tone_patterns.get(t, []) if w in text)
+            for t in ["empathetic", "supportive", "inclusive"]
         )
-    
-    return _validator_instance
+        negative = sum(
+            sum(1 for w in self.tone_patterns.get(t, []) if w in text)
+            for t in ["fear-driven", "aggressive", "judgmental"]
+        )
+        
+        if positive > negative and positive > 0:
+            return ToneType.FORMAL
+        elif negative > 0:
+            return ToneType.CASUAL
+        return ToneType.NEUTRAL
+
+
+_brand_validator: Optional[BrandValidator] = None
+
+
+def get_brand_validator(kb_path: str = "brand_kb") -> BrandValidator:
+    """Get global BrandValidator instance"""
+    global _brand_validator
+    if _brand_validator is None:
+        _brand_validator = BrandValidator(kb_path)
+    return _brand_validator
