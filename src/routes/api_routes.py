@@ -285,3 +285,28 @@ def generate_marketing_copy_with_validation(request: MarketingCopyRequest):
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Marketing copy generation with validation failed: {str(e)}")
+
+@router.post("/orchestrate/campaign")
+def orchestrate_campaign(campaign: CampaignCreate):
+    """
+    Orchestrate a full campaign generation pipeline using CrewAI:
+    Planning -> Content Generation -> Brand Validation.
+    """
+    try:
+        from src.core.orchestrator import ContentOrchestrationCrew
+        
+        # Convert Pydantic model to dict for CrewAI
+        inputs = {
+            "campaign_name": campaign.campaign_name,
+            "brand": campaign.brand,
+            "objective": campaign.objective or "Promote the brand",
+            "inputs": campaign.inputs
+        }
+        
+        orchestrator = ContentOrchestrationCrew()
+        result = orchestrator.run_campaign(inputs)
+        
+        return {"result": str(result), "status": "completed"}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Orchestration failed: {str(e)}")
