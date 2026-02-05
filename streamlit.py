@@ -48,21 +48,130 @@ if page == "Create Campaign":
                     "inputs": inputs
                 }
                 
-                with st.spinner("Submitting to backend..."):
+                # Store payload in session state for regeneration
+                st.session_state.last_payload = payload
+                
+                with st.spinner("Creating campaign and generating content..."):
                     try:
                        
                         response = requests.post("http://localhost:8000/api/v1/start_campaign", json=payload)
                         
                         if response.status_code == 200:
                             data = response.json()
-                            st.success(f"Campaign '{campaign_name}' created successfully! ID: {data.get('campaign_id')}")
-                            st.json(data)
+                            campaign_id = data.get('campaign_id')
+                            
+                            # Store campaign data in session state
+                            st.session_state.current_campaign = {
+                                'campaign_id': campaign_id,
+                                'campaign_name': campaign_name,
+                                'brand': brand,
+                                'data': data
+                            }
+                            
+                            st.success(f"✅ Campaign '{campaign_name}' created successfully! ID: {campaign_id}")
+                            
                         else:
                             st.error(f"Error creating campaign: {response.status_code} - {response.text}")
                     except requests.exceptions.ConnectionError:
                         st.error("Failed to connect to backend API. Is the server running?")
                     except Exception as e:
                         st.error(f"An unexpected error occurred: {str(e)}")
+    
+    # Display results if campaign was created
+    if 'current_campaign' in st.session_state and st.session_state.current_campaign:
+        st.markdown("---")
+        st.header("📊 Generated Content")
+        
+        campaign_data = st.session_state.current_campaign
+        data = campaign_data.get('data', {})
+        
+        # Extract text and image from response
+        # Assuming API returns: {text_content: str, image_url: str}
+        text_content = data.get('text_content', data.get('generated_text', ''))
+        image_url = data.get('image_url', data.get('generated_image_url', ''))
+        
+        # Side-by-side layout
+        col_text, col_image = st.columns(2)
+        
+        with col_text:
+            st.subheader("📝 Generated Text")
+            if text_content:
+                st.markdown(text_content)
+            else:
+                st.info("No text content available. The content may still be generating or there was an issue.")
+                # Show raw data for debugging
+                if st.checkbox("Show raw data"):
+                    st.json(data)
+        
+        with col_image:
+            st.subheader("🖼️ Generated Image")
+            if image_url:
+                try:
+                    st.image(image_url, use_column_width=True, caption="Generated Marketing Image")
+                except Exception as e:
+                    st.error(f"Failed to load image: {str(e)}")
+                    st.write(f"Image URL: {image_url}")
+            else:
+                st.info("No image available. The image may still be generating or there was an issue.")
+        
+        # Action buttons
+        st.markdown("---")
+        col_btn1, col_btn2, col_btn3 = st.columns([1, 1, 2])
+        
+        with col_btn1:
+            if st.button("🔄 Regenerate", key="regenerate_btn", help="Generate new content with the same inputs"):
+                if 'last_payload' in st.session_state:
+                    with st.spinner("Regenerating content..."):
+                        try:
+                            response = requests.post("http://localhost:8000/api/v1/start_campaign", 
+                                                   json=st.session_state.last_payload)
+                            
+                            if response.status_code == 200:
+                                data = response.json()
+                                campaign_id = data.get('campaign_id')
+                                
+                                # Update session state with new data
+                                st.session_state.current_campaign = {
+                                    'campaign_id': campaign_id,
+                                    'campaign_name': st.session_state.last_payload['campaign_name'],
+                                    'brand': st.session_state.last_payload['brand'],
+                                    'data': data
+                                }
+                                
+                                st.success("✨ Content regenerated successfully!")
+                                st.rerun()
+                            else:
+                                st.error(f"Regeneration failed: {response.status_code}")
+                        except Exception as e:
+                            st.error(f"Regeneration error: {str(e)}")
+        
+        with col_btn2:
+            if st.button("✅ Save & Accept", key="save_btn", help="Approve and save this content"):
+                campaign_id = campaign_data.get('campaign_id')
+                if campaign_id:
+                    # TODO: ML Engineer 1 to create this endpoint
+                    # For now, just show confirmation
+                    st.success(f"✅ Campaign {campaign_id} approved and saved!")
+                    st.balloons()
+                    
+                    # Optional: Clear current campaign after saving
+                    # st.session_state.current_campaign = None
+                else:
+                    st.error("No campaign ID found")
+        
+        # Generation details
+        st.markdown("---")
+        with st.expander("📋 Generation Details"):
+            st.write(f"**Campaign ID:** {campaign_data.get('campaign_id', 'N/A')}")
+            st.write(f"**Campaign Name:** {campaign_data.get('campaign_name', 'N/A')}")
+            st.write(f"**Brand:** {campaign_data.get('brand', 'N/A')}")
+            
+            if 'created_at' in data:
+                st.write(f"**Generated:** {data['created_at']}")
+            
+            st.write("**Full Response:**")
+            st.json(data)
+
 
 elif page == "View Campaigns":
     st.header("Existing Campaigns")
