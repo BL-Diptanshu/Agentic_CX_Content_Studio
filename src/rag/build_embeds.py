@@ -6,6 +6,7 @@ from sentence_transformers import SentenceTransformer
 import faiss
 import numpy as np
 import pickle
+from src.processing.chunking import chunk_by_section
 
 # Paths
 DATA_DIR = "data"
@@ -25,29 +26,10 @@ def setup_rag():
     with open(GUIDELINES_FILE, "r", encoding="utf-8") as f:
         text = f.read()
         
-    chunks = []
-    current_chunk = []
-    
-    for line in text.split('\n'):
-        line = line.strip()
-        
-        if line.startswith('##') and current_chunk:
-            chunks.append('\n'.join(current_chunk))
-            current_chunk = [line]
-        elif line.startswith('#') and current_chunk:
-            chunks.append('\n'.join(current_chunk))
-            current_chunk = [line]
-        elif line:
-            current_chunk.append(line)
-        elif current_chunk and len(current_chunk) > 1:
-            chunks.append('\n'.join(current_chunk))
-            current_chunk = []
-    
-    if current_chunk:
-        chunks.append('\n'.join(current_chunk))
-    
-    chunks = [c for c in chunks if len(c.strip()) > 20]
+    # 2. Chunk Text (using centralized chunking module)
+    chunks = chunk_by_section(text, header_markers=['##', '#'])
     print(f"Created {len(chunks)} chunks.")
+
     
     # 3. Create Embeddings
     print("Loading embedding model (all-MiniLM-L6-v2)...")
