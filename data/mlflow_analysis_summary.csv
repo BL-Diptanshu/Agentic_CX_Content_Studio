@@ -1,0 +1,14 @@
+run_id,params.model_name,params.temperature,params.max_tokens,metrics.generation_time_ms,metrics.output_length,tags.prompt_snippet,efficiency
+76855f2754c64b2284f24647b8f15ba3,llama-3.1-8b-instant,0.7,150,376.47223472595215,820.0,"Write compelling marketing copy for FutureTech's 'Innovation Showcase' campaign.
+
+Campaign Objective",2.17811547403199
+67485d821dd84b15b6c0d185701cfe66,llama-3.1-8b-instant,0.7,150,362.85901069641113,625.0,"Write compelling marketing copy for FashionHub's 'Summer Sale 2026' campaign.
+
+Campaign Objective: D",1.7224320785102707
+a4b32e45c16940cb9fc893c5f088d15e,llama-3.1-8b-instant,0.7,150,361.2487316131592,750.0,"Write compelling marketing copy for TechCorp's 'SmartWatch Pro Launch' campaign.
+
+Campaign Objective",2.076131856991909
+49682384dab845b6bdea513493a1d0cf,llama-3.1-8b-instant,0.7,200,433.5453510284424,1220.0,Write a detailed blog post introduction about AI in marketing,2.8140078012737426
+dd5dd1a0c5884090b7126a155a2eda9e,llama-3.1-8b-instant,0.7,50,227.38289833068848,183.0,Write a tagline for a premium smartphone,0.8048098662805268
+7cdb198722184557958289e126546741,llama-3.1-8b-instant,0.9,100,286.88883781433105,513.0,Write a creative product description for a smartwatch,1.7881490402634757
+1803b4b8446c4db5ab3b16ba9cec06bb,llama-3.1-8b-instant,0.3,100,876.8293857574463,536.0,Write a professional product description for a smartwatch,0.6112933812511063
