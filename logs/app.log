@@ -4,3 +4,21 @@
 2026-02-06 10:23:29 - faiss.loader - INFO - [loader.py:134] - <module>() - Successfully loaded faiss with AVX2 support.
 2026-02-06 10:24:47 - faiss.loader - INFO - [loader.py:132] - <module>() - Loading faiss with AVX2 support.
 2026-02-06 10:24:47 - faiss.loader - INFO - [loader.py:134] - <module>() - Successfully loaded faiss with AVX2 support.
+2026-02-06 13:43:49 - httpx - INFO - [_client.py:1025] - _send_single_request() - HTTP Request: GET http://testserver/api/v1/health "HTTP/1.1 200 OK"
+2026-02-06 13:43:49 - src.routes.api_routes - INFO - [api_routes.py:35] - create_campaign() - Creating campaign: API Test Campaign for brand: API Brand
+2026-02-06 13:43:49 - src.routes.api_routes - INFO - [api_routes.py:46] - create_campaign() - Campaign created successfully: ID=1
+2026-02-06 13:43:49 - httpx - INFO - [_client.py:1025] - _send_single_request() - HTTP Request: POST http://testserver/api/v1/start_campaign "HTTP/1.1 200 OK"
+2026-02-06 13:43:49 - httpx - INFO - [_client.py:1025] - _send_single_request() - HTTP Request: GET http://testserver/api/v1/campaigns/99999 "HTTP/1.1 404 Not Found"
+2026-02-06 13:43:49 - httpx - INFO - [_client.py:1025] - _send_single_request() - HTTP Request: POST http://testserver/api/v1/generate/text "HTTP/1.1 500 Internal Server Error"
+2026-02-06 13:43:50 - httpx - INFO - [_client.py:1025] - _send_single_request() - HTTP Request: POST http://testserver/api/v1/validate/text "HTTP/1.1 500 Internal Server Error"
+2026-02-06 13:43:59 - faiss.loader - INFO - [loader.py:132] - <module>() - Loading faiss with AVX2 support.
+2026-02-06 13:43:59 - faiss.loader - INFO - [loader.py:134] - <module>() - Successfully loaded faiss with AVX2 support.
+2026-02-06 13:44:58 - httpx - INFO - [_client.py:1025] - _send_single_request() - HTTP Request: GET http://testserver/api/v1/health "HTTP/1.1 200 OK"
+2026-02-06 13:44:58 - src.routes.api_routes - INFO - [api_routes.py:35] - create_campaign() - Creating campaign: API Test Campaign for brand: API Brand
+2026-02-06 13:44:58 - src.routes.api_routes - INFO - [api_routes.py:46] - create_campaign() - Campaign created successfully: ID=1
+2026-02-06 13:44:58 - httpx - INFO - [_client.py:1025] - _send_single_request() - HTTP Request: POST http://testserver/api/v1/start_campaign "HTTP/1.1 200 OK"
+2026-02-06 13:44:58 - httpx - INFO - [_client.py:1025] - _send_single_request() - HTTP Request: GET http://testserver/api/v1/campaigns/99999 "HTTP/1.1 404 Not Found"
+2026-02-06 13:44:58 - httpx - INFO - [_client.py:1025] - _send_single_request() - HTTP Request: POST http://testserver/api/v1/generate/text "HTTP/1.1 200 OK"
+2026-02-06 13:44:58 - httpx - INFO - [_client.py:1025] - _send_single_request() - HTTP Request: POST http://testserver/api/v1/validate/text "HTTP/1.1 200 OK"
+2026-02-06 13:45:03 - faiss.loader - INFO - [loader.py:132] - <module>() - Loading faiss with AVX2 support.
+2026-02-06 13:45:03 - faiss.loader - INFO - [loader.py:134] - <module>() - Successfully loaded faiss with AVX2 support.
