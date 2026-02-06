@@ -1,0 +1,6 @@
+2026-02-06 10:21:42 - faiss.loader - INFO - [loader.py:132] - <module>() - Loading faiss with AVX2 support.
+2026-02-06 10:21:42 - faiss.loader - INFO - [loader.py:134] - <module>() - Successfully loaded faiss with AVX2 support.
+2026-02-06 10:23:29 - faiss.loader - INFO - [loader.py:132] - <module>() - Loading faiss with AVX2 support.
+2026-02-06 10:23:29 - faiss.loader - INFO - [loader.py:134] - <module>() - Successfully loaded faiss with AVX2 support.
+2026-02-06 10:24:47 - faiss.loader - INFO - [loader.py:132] - <module>() - Loading faiss with AVX2 support.
+2026-02-06 10:24:47 - faiss.loader - INFO - [loader.py:134] - <module>() - Successfully loaded faiss with AVX2 support.

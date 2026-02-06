@@ -3,12 +3,13 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 import logging
 from src.core.database import get_db
-from src.core.models import Campaign, TextContent
+from src.core.models import Campaign, TextContent, ImageContent
 from src.core.text_content_gen import get_text_generator
 from src.core.brand_validator import get_brand_validator, ValidationResult
 from pydantic import BaseModel
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from datetime import datetime
+import re
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -296,8 +297,59 @@ def generate_marketing_copy_with_validation(request: MarketingCopyRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Marketing copy generation with validation failed: {str(e)}")
 
+def _save_orchestration_results(campaign_id: int, result_str: str, db: Session):
+    """Helper to parse and save orchestration results"""
+    try:
+        # Simple heuristic to extract image URL (supports Replicate/generic URLs)
+        # Looking for http/https in the string that looks like an image URL 
+        # or just taking known patterns if available.
+        # For now, regex for http(s)
+        
+        image_url = None
+        text_content = result_str
+        
+        # Regex to find a URL
+        url_pattern = r'https?://[^\s<>"]+|www\.[^\s<>"]+'
+        urls = re.findall(url_pattern, result_str)
+        
+        if urls:
+            # Assume the last URL is the image if multiple? Or checking extension?
+            # Replicate URLs usually are distinct.
+            # For this MVP, let's take the first found URL as image if it looks like one, 
+            # or just assume the tool puts it there.
+            
+            # Refined strategy: Just take the first URL
+            image_url = urls[0]
+        
+        # Save Text
+        text_entry = TextContent(
+            campaign_id=campaign_id,
+            generated_text=text_content,
+            agent_name="ContentOrchestrationCrew",
+            validation_status="COMPLETED" # Assumed validated by crew
+        )
+        db.add(text_entry)
+        
+        # Save Image if found
+        if image_url:
+            image_entry = ImageContent(
+                campaign_id=campaign_id,
+                generated_image_url=image_url,
+                agent_name="ContentOrchestrationCrew",
+                validation_status="COMPLETED"
+            )
+            db.add(image_entry)
+            
+        db.commit()
+        return text_entry, image_url
+        
+    except Exception as e:
+        logger.error(f"Failed to save results: {e}")
+        # Don't raise, just log, so we return the result at least
+        return None, None
+
 @router.post("/orchestrate/campaign")
-def orchestrate_campaign(campaign: CampaignCreate):
+def orchestrate_campaign(campaign: CampaignCreate, db: Session = Depends(get_db)):
     """
     Orchestrate a full campaign generation pipeline using CrewAI:
     Planning -> Content Generation -> Brand Validation.
@@ -305,6 +357,18 @@ def orchestrate_campaign(campaign: CampaignCreate):
     try:
         from src.core.orchestrator import ContentOrchestrationCrew
         
+        # 1. Create Campaign in DB first
+        new_campaign = Campaign(
+            campaign_name=campaign.campaign_name,
+            brand=campaign.brand,
+            objective=campaign.objective,
+            inputs=campaign.inputs
+        )
+        db.add(new_campaign)
+        db.commit()
+        db.refresh(new_campaign)
+        
+        # 2. Run Crew
         # Convert Pydantic model to dict for CrewAI
         inputs = {
             "campaign_name": campaign.campaign_name,
@@ -315,8 +379,99 @@ def orchestrate_campaign(campaign: CampaignCreate):
         
         orchestrator = ContentOrchestrationCrew()
         result = orchestrator.run_campaign(inputs)
+        result_str = str(result)
         
-        return {"result": str(result), "status": "completed"}
+        # 3. Save Results
+        _save_orchestration_results(new_campaign.campaign_id, result_str, db)
+        
+        return {
+            "status": "completed", 
+            "campaign_id": new_campaign.campaign_id,
+            "result": result_str
+        }
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Orchestration failed: {str(e)}")
+
+class RegenerationRequest(BaseModel):
+    campaign_id: int
+    feedback: Optional[str] = None
+
+@router.post("/regenerate")
+def regenerate_content(request: RegenerationRequest, db: Session = Depends(get_db)):
+    """
+    Regenerate content for an existing campaign.
+    Retries the orchestration with the same inputs (plus feedback if supported later).
+    """
+    try:
+        from src.core.orchestrator import ContentOrchestrationCrew
+        
+        # 1. Fetch Campaign
+        campaign = db.query(Campaign).filter(Campaign.campaign_id == request.campaign_id).first()
+        if not campaign:
+             raise HTTPException(status_code=404, detail="Campaign not found")
+        
+        inputs = {
+            "campaign_name": campaign.campaign_name,
+            "brand": campaign.brand,
+            "objective": campaign.objective or "Promote the brand",
+            "inputs": campaign.inputs
+        }
+        
+        # Add feedback to inputs if provided (Crew might need update to handle this, 
+        # but passing it doesn't hurt)
+        if request.feedback:
+            inputs["feedback"] = request.feedback
+            
+        # 2. Re-run Crew
+        orchestrator = ContentOrchestrationCrew()
+        result = orchestrator.run_campaign(inputs)
+        result_str = str(result)
+        
+        # 3. Save New Results
+        _save_orchestration_results(campaign.campaign_id, result_str, db)
+        
+        return {
+            "status": "regenerated",
+            "campaign_id": campaign.campaign_id,
+            "result": result_str
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Regeneration failed: {str(e)}")
+
+class CampaignResultResponse(BaseModel):
+    campaign_id: int
+    campaign_name: str
+    generated_text: Optional[str] = None
+    image_url: Optional[str] = None
+    created_at: datetime
+
+@router.get("/campaigns/{campaign_id}/results", response_model=CampaignResultResponse)
+def get_campaign_results(campaign_id: int, db: Session = Depends(get_db)):
+    """
+    Get the latest generated results (text and image) for a campaign.
+    """
+    campaign = db.query(Campaign).filter(Campaign.campaign_id == campaign_id).first()
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+        
+    # Get latest text content
+    text_content = db.query(TextContent)\
+        .filter(TextContent.campaign_id == campaign_id)\
+        .order_by(TextContent.created_at.desc())\
+        .first()
+        
+    # Get latest image content
+    image_content = db.query(ImageContent)\
+        .filter(ImageContent.campaign_id == campaign_id)\
+        .order_by(ImageContent.created_at.desc())\
+        .first()
+        
+    return CampaignResultResponse(
+        campaign_id=campaign.campaign_id,
+        campaign_name=campaign.campaign_name,
+        generated_text=text_content.generated_text if text_content else None,
+        image_url=image_content.generated_image_url if image_content else None,
+        created_at=campaign.created_at
+    )
