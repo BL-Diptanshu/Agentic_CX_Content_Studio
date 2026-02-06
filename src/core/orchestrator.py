@@ -1,5 +1,4 @@
 from crewai import Crew, Task, Agent
-from langchain_groq import ChatGroq
 import logging
 import os
 from src.core.campaign_planner_agent import CampaignPlannerAgent
@@ -13,20 +12,21 @@ class ContentOrchestrationCrew:
     def __init__(self):
         logger.info("Initializing ContentOrchestrationCrew...")
         
-        if os.getenv("GROQ_API_KEY"):
-            os.environ["OPENAI_API_KEY"] = os.getenv("GROQ_API_KEY")
-            os.environ["OPENAI_API_BASE"] = "https://api.groq.com/openai/v1"
-            logger.debug("Configured Groq API compatibility layer")
+        
+        # Configure GROQ API key for CrewAI's native Groq support
+        groq_api_key = os.getenv("GROQ_API_KEY")
+        if not groq_api_key:
+            raise ValueError("GROQ_API_KEY not found in environment variables")
+        
+        # Set GROQ_API_KEY for CrewAI's native provider
+        os.environ["GROQ_API_KEY"] = groq_api_key
+            
+        logger.debug(f"Configured CrewAI native Groq support (key: {groq_api_key[:15]}...)")
 
-        # Initialize Groq LLMs
-        self.planning_llm = ChatGroq(
-            model_name="llama-3.3-70b-versatile",
-            api_key=os.getenv("GROQ_API_KEY")
-        )
-        self.writing_llm = ChatGroq(
-            model_name="llama-3.1-8b-instant",
-            api_key=os.getenv("GROQ_API_KEY")
-        )
+        # Use CrewAI's native Groq support with string model names
+        # This prevents CrewAI from wrapping in its own OpenAI client
+        self.planning_llm = "groq/llama-3.3-70b-versatile"
+        self.writing_llm = "groq/llama-3.1-8b-instant"
 
         # Create agents from modular agent files
         self.planner_agent = CampaignPlannerAgent().create(llm=self.planning_llm)

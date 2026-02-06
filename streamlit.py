@@ -54,18 +54,23 @@ if page == "Create Campaign":
                 with st.spinner("Creating campaign and generating content..."):
                     try:
                        
-                        response = requests.post("http://localhost:8000/api/v1/start_campaign", json=payload)
+                        # Use orchestration endpoint with CrewAI
+                        response = requests.post("http://localhost:8000/api/v1/orchestrate/campaign", json=payload)
                         
                         if response.status_code == 200:
                             data = response.json()
                             campaign_id = data.get('campaign_id')
+                            result_str = data.get('result', '')
                             
                             # Store campaign data in session state
                             st.session_state.current_campaign = {
                                 'campaign_id': campaign_id,
                                 'campaign_name': campaign_name,
                                 'brand': brand,
-                                'data': data
+                                'data': {
+                                    'result': result_str,
+                                    'campaign_id': campaign_id
+                                }
                             }
                             
                             st.success(f"✅ Campaign '{campaign_name}' created successfully! ID: {campaign_id}")
@@ -85,10 +90,24 @@ if page == "Create Campaign":
         campaign_data = st.session_state.current_campaign
         data = campaign_data.get('data', {})
         
-        # Extract text and image from response
-        # Assuming API returns: {text_content: str, image_url: str}
-        text_content = data.get('text_content', data.get('generated_text', ''))
-        image_url = data.get('image_url', data.get('generated_image_url', ''))
+        # Extract text and image from orchestration result
+        result_str = data.get('result', '')
+        
+        # Parse result to extract image URL
+        import re
+        image_url = ''
+        text_content = result_str
+        
+        # Look for URLs in the result
+        url_pattern = r'https?://[^\s<>"]+|www\.[^\s<>"]+'
+        urls = re.findall(url_pattern, result_str)
+        
+        if urls:
+            # Assume first URL is the image
+            image_url = urls[0]
+            # Remove URL from text
+            text_content = result_str.replace(image_url, '').strip()
+
         
         # Side-by-side layout
         col_text, col_image = st.columns(2)

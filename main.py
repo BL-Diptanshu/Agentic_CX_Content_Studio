@@ -1,8 +1,12 @@
 import uvicorn
 import logging.config
 import yaml
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from src.routes.api_routes import router as api_router
+
+# Load environment variables FIRST
+load_dotenv(override=True)
 
 with open('config/logging.config.yaml', 'r') as f:
     log_config = yaml.safe_load(f)
