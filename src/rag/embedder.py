@@ -6,18 +6,20 @@ import numpy as np
 from typing import List, Union
 
 
+from src.config.settings import settings
+
 class Embedder:
     """Creates embeddings from text using SentenceTransformers"""
     
-    def __init__(self, model_name: str = 'sentence-transformers/all-MiniLM-L6-v2'):
+    def __init__(self, model_name: str = None):
         """
         Initialize embedder with specified model
         
         Args:
             model_name: HuggingFace model name
         """
-        self.model = SentenceTransformer(model_name, local_files_only=True)
-        self.model_name = model_name
+        self.model_name = model_name or settings.RAG_EMBEDDING_MODEL
+        self.model = SentenceTransformer(self.model_name, local_files_only=True)
     
     def embed_text(self, text: Union[str, List[str]]) -> np.ndarray:
         """

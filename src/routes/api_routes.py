@@ -51,7 +51,7 @@ def create_campaign(campaign: CampaignCreate, db: Session = Depends(get_db)):
 
 @router.get("/campaigns/")
 def list_campaigns(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
-    campaigns = db.query(Campaign).offset(skip).limit(limit).all()
+    campaigns = db.query(Campaign).order_by(Campaign.created_at.desc()).offset(skip).limit(limit).all()
     return campaigns
 
 @router.get("/campaigns/{campaign_id}")
@@ -170,9 +170,9 @@ def generate_image(request: ImageGenerateRequest):
     Generate image using Replicate API with FLUX.1-dev.
     """
     try:
-        from src.core.image_content_gen import ImageGenerator
+        from src.core.hf_image_gen import HuggingFaceGenerator
         
-        generator = ImageGenerator()
+        generator = HuggingFaceGenerator()
         image_url = generator.generate(
             prompt=request.prompt,
             width=request.width,
@@ -297,46 +297,84 @@ def generate_marketing_copy_with_validation(request: MarketingCopyRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Marketing copy generation with validation failed: {str(e)}")
 
-def _save_orchestration_results(campaign_id: int, result_str: str, db: Session):
-    """Helper to parse and save orchestration results"""
+def _save_orchestration_results(campaign_id: int, result_data: Any, db: Session):
+    """
+    Helper to parse and save orchestration results.
+    Accepts result_data as either a dict or a string.
+    """
     try:
-        # Simple heuristic to extract image URL (supports Replicate/generic URLs)
-        # Looking for http/https in the string that looks like an image URL 
-        # or just taking known patterns if available.
-        # For now, regex for http(s)
+        import ast
         
+        parsed_data = {}
         image_url = None
-        text_content = result_str
+        text_content = ""
         
-        # Regex to find a URL
-        url_pattern = r'https?://[^\s<>"]+|www\.[^\s<>"]+'
-        urls = re.findall(url_pattern, result_str)
+        # 1. Parse Input
+        if isinstance(result_data, dict):
+            parsed_data = result_data
+        else:
+            # Try to parse string as dict
+            try:
+                parsed_data = ast.literal_eval(str(result_data))
+                if not isinstance(parsed_data, dict):
+                    parsed_data = {}
+            except:
+                parsed_data = {}
+        
+        # 2. Extract Content
+        # If we successfully parsed a dict with 'text'/'image' keys (from Orchestrator return)
+        if 'text' in parsed_data:
+            text_content = parsed_data['text']
+            # Clean up text if it looks like a python string representation
+            if text_content.startswith(("'", '"')) and text_content.endswith(("'", '"')):
+                 try:
+                     text_content = ast.literal_eval(text_content)
+                 except:
+                     pass
+        else:
+            # Fallback: Treat the whole input as text (legacy behavior)
+            text_content = str(result_data)
+
+        # 3. Extract Image URL
+        # Priority: 'image' key in dict -> Regex in text -> Regex in raw input
+        raw_image_field = parsed_data.get('image', '')
+        
+        # Regex to find http/https or /static/ paths
+        # Excluding quotes and trailing punctuation
+        url_pattern = r'(https?://[^\s<>"\')]+|/static/[^\s<>"\')]+)'
+        
+        # Trigger explicit extraction from the specific image field first
+        urls = re.findall(url_pattern, str(raw_image_field))
+        
+        if not urls:
+            # Fallback: search in the text content
+             urls = re.findall(url_pattern, text_content)
+             
+        if not urls:
+             # Fallback: search in the raw string
+             urls = re.findall(url_pattern, str(result_data))
         
         if urls:
-            # Assume the last URL is the image if multiple? Or checking extension?
-            # Replicate URLs usually are distinct.
-            # For this MVP, let's take the first found URL as image if it looks like one, 
-            # or just assume the tool puts it there.
-            
-            # Refined strategy: Just take the first URL
             image_url = urls[0]
-        
-        # Save Text
+            # Clean trailing punctuation
+            image_url = image_url.rstrip(".,;:')\"")
+            
+        # 4. Save Text
         text_entry = TextContent(
             campaign_id=campaign_id,
-            generated_text=text_content,
+            generated_text=text_content, # Now strictly the text part
             agent_name="ContentOrchestrationCrew",
-            validation_status="COMPLETED" # Assumed validated by crew
+            validation_status="PASS" 
         )
         db.add(text_entry)
         
-        # Save Image if found
+        # 5. Save Image if found
         if image_url:
             image_entry = ImageContent(
                 campaign_id=campaign_id,
                 generated_image_url=image_url,
                 agent_name="ContentOrchestrationCrew",
-                validation_status="COMPLETED"
+                validation_status="PASS"
             )
             db.add(image_entry)
             
@@ -347,12 +385,25 @@ def _save_orchestration_results(campaign_id: int, result_str: str, db: Session):
         logger.error(f"Failed to save results: {e}")
         # Don't raise, just log, so we return the result at least
         return None, None
+        
+    except Exception as e:
+        logger.error(f"Failed to save results: {e}")
+        # Don't raise, just log, so we return the result at least
+        return None, None
 
 @router.post("/orchestrate/campaign")
-def orchestrate_campaign(campaign: CampaignCreate, db: Session = Depends(get_db)):
+def orchestrate_campaign(
+    campaign: CampaignCreate, 
+    db: Session = Depends(get_db),
+    auto_regenerate: bool = True,  # Enable auto-regeneration by default
+    max_attempts: int = 3           # Max regeneration attempts
+):
     """
     Orchestrate a full campaign generation pipeline using CrewAI:
     Planning -> Content Generation -> Brand Validation.
+    
+    With auto_regenerate=True, will automatically retry generation
+    with improved prompts if validation fails.
     """
     try:
         from src.core.orchestrator import ContentOrchestrationCrew
@@ -368,8 +419,7 @@ def orchestrate_campaign(campaign: CampaignCreate, db: Session = Depends(get_db)
         db.commit()
         db.refresh(new_campaign)
         
-        # 2. Run Crew
-        # Convert Pydantic model to dict for CrewAI
+        # 2. Prepare inputs for CrewAI
         inputs = {
             "campaign_name": campaign.campaign_name,
             "brand": campaign.brand,
@@ -378,17 +428,38 @@ def orchestrate_campaign(campaign: CampaignCreate, db: Session = Depends(get_db)
         }
         
         orchestrator = ContentOrchestrationCrew()
-        result = orchestrator.run_campaign(inputs)
-        result_str = str(result)
         
-        # 3. Save Results
-        _save_orchestration_results(new_campaign.campaign_id, result_str, db)
-        
-        return {
-            "status": "completed", 
-            "campaign_id": new_campaign.campaign_id,
-            "result": result_str
-        }
+        # 3. Run with or without auto-regeneration
+        if auto_regenerate:
+            logger.info(f"Running campaign with auto-regeneration (max_attempts={max_attempts})")
+            result_data = orchestrator.run_with_auto_regeneration(inputs, max_attempts=max_attempts)
+            
+            # Save results to DB
+            _save_orchestration_results(new_campaign.campaign_id, result_data['result'], db)
+            
+            return {
+                "campaign_id": new_campaign.campaign_id,
+                "result": result_data['result'],
+                "attempts": result_data['attempts'],
+                "status": result_data['status'],
+                "validation_summary": result_data.get('validation_summary', {})
+            }
+        else:
+            logger.info("Running campaign without auto-regeneration (one-shot)")
+            result = orchestrator.run_campaign(inputs)
+            
+            # Save results to DB
+            _save_orchestration_results(new_campaign.campaign_id, result, db)
+            
+            result_str = str(result)
+            
+            # Return simple result for non-regeneration mode
+            return {
+                "campaign_id": new_campaign.campaign_id,
+                "result": result_str,
+                "attempts": 1,
+                "status": "completed"
+            }
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Orchestration failed: {str(e)}")

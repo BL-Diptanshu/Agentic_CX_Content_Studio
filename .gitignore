@@ -49,3 +49,16 @@ data/postgresdb/*
 !data/vectordb/.gitkeep
 !data/postgresdb/.gitkeep
 mlflow.db
+
+# Generated Content
+static/generated/*
+!static/generated/.gitkeep
+
+# Logs
+*.log
+logs/
+
+# Test artifacts
+.pytest_cache/
+.coverage
+htmlcov/

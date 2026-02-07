@@ -1,7 +1,7 @@
 from crewai.tools import BaseTool
 import json
 from src.core.text_content_gen import get_text_generator
-from src.core.image_content_gen import ImageGenerator
+
 from src.core.brand_validator import get_brand_validator
 
 class TextGenerationTool(BaseTool):
@@ -19,15 +19,19 @@ class TextGenerationTool(BaseTool):
 class ImageGenerationTool(BaseTool):
     name: str = "Image Generation Tool"
     description: str = (
-        "Generates an image based on a prompt. "
+        "Generates an image based on a prompt using Hugging Face Inference API. "
         "Input should be a detailed visual description of the desired image."
     )
 
     def _run(self, prompt: str) -> str:
-        generator = ImageGenerator()
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"ImageGenerationTool called with prompt: {prompt}")
+        from src.core.hf_image_gen import HuggingFaceGenerator
+        generator = HuggingFaceGenerator()
         try:
             url = generator.generate(prompt=prompt)
-            return f"Image generated successfully: {url}"
+            return f"Image generated successfully via HF. URL: {url}"
         except Exception as e:
             return f"Image generation failed: {str(e)}"
 

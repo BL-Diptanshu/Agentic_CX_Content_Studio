@@ -7,17 +7,19 @@ from src.rag.embedder import Embedder
 from src.rag.vector_store import VectorStore
 
 
+from src.config.settings import settings
+
 class IndexBuilder:
     """Build and save FAISS index from documents"""
     
-    def __init__(self, model_name: str = 'sentence-transformers/all-MiniLM-L6-v2'):
+    def __init__(self, model_name: str = None):
         """
         Initialize index builder
         
         Args:
             model_name: Embedder model name
         """
-        self.embedder = Embedder(model_name)
+        self.embedder = Embedder(model_name or settings.RAG_EMBEDDING_MODEL)
     
     def build_from_documents(self, documents: List[str]) -> VectorStore:
         """

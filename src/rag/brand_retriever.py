@@ -1,5 +1,5 @@
 from crewai.tools import BaseTool
-from pydantic import Field, PrivateAttr
+from pydantic import Field, PrivateAttr, BaseModel
 import faiss
 import numpy as np
 import pickle
@@ -13,9 +13,14 @@ from src.prompt.rag_prompt_temp import (
     RETRIEVAL_ERROR_TEMPLATE
 )
 
+class BrandGuidelineRetrieverInput(BaseModel):
+    """Input schema for Brand Guideline Retriever"""
+    query: str = Field(..., description="The search query to find relevant brand guideline information")
+
 class BrandGuidelineRetriever(BaseTool):
     name: str = "Brand Guideline Retriever"
     description: str = BRAND_RETRIEVER_DESCRIPTION
+    args_schema: Type[BaseModel] = BrandGuidelineRetrieverInput
     
     _model: SentenceTransformer = PrivateAttr()
     _index: faiss.Index = PrivateAttr()
@@ -43,14 +48,14 @@ class BrandGuidelineRetriever(BaseTool):
         with open(docs_file, "rb") as f:
             self._docs = pickle.load(f)
 
-    def _run(self, query: str, k: int = None) -> str:
+    def _run(self, query: str) -> str:
+        """Run the retrieval tool with the given query"""
         try:
-            num_results = k if k is not None else self._top_k
             query_vector = self._model.encode([query])
             
             distances, indices = self._index.search(
                 np.array(query_vector).astype('float32'), 
-                num_results
+                self._top_k
             )
             
             results = []

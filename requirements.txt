@@ -1,23 +1,37 @@
-crewai
-groq
-numpy
-pandas
-faiss-cpu
-Pillow
-requests
-langchain
 fastapi
 uvicorn
+streamlit
+crewai
+python-dotenv
+requests
 sqlalchemy
 psycopg2-binary
-pydantic
-streamlit
-pytest
-tiktoken
-transformers
-torch
-accelerate
 sentence-transformers
-replicate
-mlflow
-
+faiss-cpu
+python-docx
+PyPDF2
+google-generativeai
+crewai[google-genai]
+groq
+fastapi
+uvicorn
+streamlit
+crewai
+python-dotenv
+requests
+sqlalchemy
+psycopg2-binary
+sentence-transformers
+faiss-cpu
+python-docx
+PyPDF2
+google-generativeai
+crewai[google-genai]
+groq
+# replicate # Removing Replicate
+watchfiles
+huggingface_hub # For free inference API
+# diffusers # Removing local inference to save space if unsatisfied
+# transformers
+# accelerate
+# torch
