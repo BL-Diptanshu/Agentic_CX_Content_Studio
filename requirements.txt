@@ -13,21 +13,6 @@ PyPDF2
 google-generativeai
 crewai[google-genai]
 groq
-fastapi
-uvicorn
-streamlit
-crewai
-python-dotenv
-requests
-sqlalchemy
-psycopg2-binary
-sentence-transformers
-faiss-cpu
-python-docx
-PyPDF2
-google-generativeai
-crewai[google-genai]
-groq
 # replicate # Removing Replicate
 watchfiles
 huggingface_hub # For free inference API
@@ -35,3 +20,5 @@ huggingface_hub # For free inference API
 # transformers
 # accelerate
 # torch
+reportlab
+Pillow

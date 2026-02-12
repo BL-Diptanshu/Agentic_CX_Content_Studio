@@ -300,7 +300,7 @@ if page == "Create Campaign":
         
         # Action buttons
         st.markdown("---")
-        col_btn1, col_btn2, col_btn3 = st.columns(3)
+        col_btn1, col_btn2, col_btn3, col_btn4 = st.columns(4)
         
         with col_btn1:
             if st.button("🔄 Regenerate Content"):
@@ -326,6 +326,33 @@ if page == "Create Campaign":
                 st.success("Campaign saved to database!")
         
         with col_btn3:
+            # PDF Export button
+            if st.button("📄 Save as PDF"):
+                try:
+                    import sys
+                    sys.path.append(str(Path(__file__).parent))
+                    from src.utils.pdf_generator import generate_campaign_pdf
+                    
+                    # Generate PDF
+                    pdf_buffer = generate_campaign_pdf(
+                        campaign_name=campaign_data.get('campaign_name', 'Campaign'),
+                        brand=campaign_data.get('brand', 'Brand'),
+                        text_content=text_content,
+                        image_url=image_url if image_url else None
+                    )
+                    
+                    # Create download button
+                    st.download_button(
+                        label="⬇️ Download PDF",
+                        data=pdf_buffer,
+                        file_name=f"{campaign_data.get('campaign_name', 'campaign').replace(':', '').replace(' ', '_')}.pdf",
+                        mime="application/pdf"
+                    )
+                    st.success("✅ PDF generated! Click button above to download.")
+                except Exception as e:
+                    st.error(f"Failed to generate PDF: {str(e)}")
+        
+        with col_btn4:
             if st.button("📋 View All Campaigns"):
                 st.switch_page("pages/view_campaigns.py") if Path("pages/view_campaigns.py").exists() else st.info("Navigate to 'View Campaigns' page")
 

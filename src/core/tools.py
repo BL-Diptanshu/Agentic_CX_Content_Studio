@@ -31,7 +31,8 @@ class ImageGenerationTool(BaseTool):
         generator = HuggingFaceGenerator()
         try:
             url = generator.generate(prompt=prompt)
-            return f"Image generated successfully via HF. URL: {url}"
+            # Return just the URL for proper extraction downstream
+            return url
         except Exception as e:
             return f"Image generation failed: {str(e)}"
 
